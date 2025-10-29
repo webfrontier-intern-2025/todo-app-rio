@@ -33,7 +33,6 @@ def create_todo(db, content, deadline, tag_ids):
     return todo
 
 
-
 def delete_todo(db, todo_id: int):
     todo = db.query(Todo).filter(Todo.id == todo_id).first()
     if todo:
@@ -41,11 +40,16 @@ def delete_todo(db, todo_id: int):
         db.commit()
 
 
-def update_todo(db, todo_id: int, content: str, deadline):
+def update_todo(db, todo_id: int, content: str, deadline, tag_ids: list[int]):
     todo = db.query(Todo).filter(Todo.id == todo_id).first()
     if todo:
         todo.content = content
         todo.deadline = deadline
+
+    if tag_ids is not None:
+        tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
+        todo.tags = tags  # 既存のタグ関係を上書き
+
         db.commit()
 
 

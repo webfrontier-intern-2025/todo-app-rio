@@ -54,11 +54,7 @@
     {% if t.tags %}
       <small>（タグ: {{ t.tags | map(attribute='name') | join(', ') }}）</small>
       <br>
-  <small>タグ: 
-    {% for tag in t.tags %}
-      {{ tag.name }}{% if not loop.last %}, {% endif %}
-    {% endfor %}
-  </small>
+  
     {% endif %}
 
     <!-- ✅ 編集ボタン -->

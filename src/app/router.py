@@ -39,8 +39,6 @@ def delete_tag(tag_id: int):
     return RedirectResponse("/tags", status_code=303)
 
 
-
-
 @router.post("/api/add")
 def add_todo_api(data: dict = Body(...)):
     db = SessionLocal()
@@ -79,6 +77,7 @@ def edit_todo(
     todo_id: int,
     content: str = Form(...),
     deadline: str = Form(None),
+    tag_ids: list[int] = Form([]),
 ):
     db = SessionLocal()
     todo = db.query(Todo).filter(Todo.id == todo_id).first()
@@ -98,7 +97,7 @@ def edit_todo(
         db.close()
         raise HTTPException(status_code=400, detail="期限は今日以降の日付を指定してください。")
 
-    crud_todo.update_todo(db, todo_id, content, deadline_dt)
+    crud_todo.update_todo(db, todo_id, content, deadline_dt, tag_ids)
     db.close()
     return RedirectResponse("/", status_code=303)
 
