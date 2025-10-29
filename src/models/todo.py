@@ -1,30 +1,27 @@
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
-
-from sqlalchemy import Boolean, DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
-from sqlalchemy.types import TIMESTAMP
-
-from app.database import Base
+from src.app.database import Base
 
 
-class TodoModel(Base):
+# 中間テーブル（多対多）
+todo_tag = Table(
+    "todo_tag",
+    Base.metadata,
+    Column("todo_id", Integer, ForeignKey("todo.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE"))
+)
+
+
+class Todo(Base):
     __tablename__ = "todo"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    content: Mapped[str] = mapped_column(String(256), nullable=False)
-    completed: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="False"
-    )
-    deadline: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(String(256), nullable=False)
+    complete = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    deadline = Column(DateTime, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
-    )
-
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now(),
-    )
+    # ✅ 多対多のリレーションをTodoクラス内に
+    tags = relationship("Tag", secondary=todo_tag, back_populates="todos")

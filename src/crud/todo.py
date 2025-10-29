@@ -1,45 +1,71 @@
 from sqlalchemy.orm import Session
+from src.models.todo import Todo
+from src.schemas.schema import TodoCreate, TodoUpdate   # noqa: F401
+from src.models.tag import Tag
+from sqlalchemy.orm import joinedload
 
-from models.todo import TodoModel
-from schemas.schema import CreateTodoSchema, UpdateTodoSchema
+
+def get_todos(db: Session):
+    return (
+        db.query(Todo)
+        .options(joinedload(Todo.tags))  
+        .order_by(Todo.created_at.desc())
+        .all()
+    )
 
 
-def create(db: Session, create_todo_schema: CreateTodoSchema) -> TodoModel:
-    todo_model = TodoModel(**create_todo_schema.model_dump(exclude_unset=True))
-    db.add(todo_model)
+def get_todo(db: Session, todo_id: int):
+    return db.query(Todo).filter(Todo.id == todo_id).first()
+
+
+def create_todo(db, content, deadline, tag_ids):
+    todo = Todo(content=content, deadline=deadline)
+
+    # 複数タグを設定
+    if tag_ids:
+        from src.models.tag import Tag
+        tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
+        todo.tags = tags
+
+    db.add(todo)
     db.commit()
-    db.refresh(todo_model)
-    return todo_model
+    db.refresh(todo)
+    return todo
 
 
-def get_by_id(db: Session, todo_id: int) -> TodoModel | None:
-    return db.query(TodoModel).filter(TodoModel.id == todo_id).first()
+
+def delete_todo(db, todo_id: int):
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if todo:
+        db.delete(todo)
+        db.commit()
 
 
-def get(db: Session, skip: int = 0, limit: int = 100) -> list[TodoModel]:
-    return db.query(TodoModel).offset(skip).limit(limit).all()
+def update_todo(db, todo_id: int, content: str, deadline):
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if todo:
+        todo.content = content
+        todo.deadline = deadline
+        db.commit()
 
 
-def update(
-    db: Session, todo_model_id: int, update_todo_schema: UpdateTodoSchema
-) -> TodoModel | None:
-    todo_model = db.query(TodoModel).filter(TodoModel.id == todo_model_id).first()
-    if todo_model is None:
-        return todo_model
+def toggle_complete(db, todo_id: int, complete: bool):
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if todo:
+        todo.complete = complete
+        db.commit()
 
-    update_todo_schema_obj = update_todo_schema.model_dump(exclude_unset=True)
-    for key, value in update_todo_schema_obj.items():
-        setattr(todo_model, key, value)
-    db.add(todo_model)
+
+def create_todo_with_tags(db, content: str, tag_ids: list[int]):
+    todo = Todo(content=content)
+    if tag_ids:
+        tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
+        todo.tags = tags
+    db.add(todo)
     db.commit()
-    db.refresh(todo_model)
-    return todo_model
+    db.refresh(todo)
+    return todo
 
 
-def delete(db: Session, todo_model_id: int) -> int | None:
-    todo_model = db.query(TodoModel).get(todo_model_id)
-    if todo_model is None:
-        return None
-    db.delete(todo_model)
-    db.commit()
-    return todo_model_id
+def get_todo_by_id(db: Session, todo_id: int):
+    return db.query(Todo).options(joinedload(Todo.tags)).filter(Todo.id == todo_id).first()

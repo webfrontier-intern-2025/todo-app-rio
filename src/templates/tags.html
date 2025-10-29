@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}タグ管理{% endblock %}
+
+{% block content %}
+<h2>タグ管理</h2>
+
+<form action="/tags/add" method="post">
+  <input type="text" name="name" placeholder="新しいタグ名" required>
+  <button type="submit">追加</button>
+</form>
+
+<ul>
+  {% for tag in tags %}
+    <li>
+      {{ tag.name }}
+      <form action="/tags/delete/{{ tag.id }}" method="post" style="display:inline;">
+        <button type="submit">🗑削除</button>
+      </form>
+    </li>
+  {% else %}
+    <li>登録されたタグはありません。</li>
+  {% endfor %}
+</ul>
+
+<a href="/">← Todo一覧に戻る</a>
+{% endblock %}

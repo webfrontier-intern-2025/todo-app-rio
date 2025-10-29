@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Todo一覧{% endblock %}
+{% block content %}
+<h2>Todo一覧</h2>
+
+{% if error %}
+  <div style="color: red; font-weight: bold; margin-bottom: 10px;">
+    ⚠ {{ error }}
+  </div>
+{% endif %}
+
+<!-- Todo追加フォーム -->
+<form action="/add" method="post">
+  <input type="text" name="content" placeholder="タイトル" required>
+  <input type="date" name="deadline" placeholder="期限">
+
+  <!-- ✅ タグ選択欄を追加 -->
+  <div style="margin: 10px 0;">
+    <strong>タグを選択:</strong><br>
+    {% if tags %}
+      {% for tag in tags %}
+        <label style="margin-right: 10px;">
+          <input type="checkbox" name="tag_ids" value="{{ tag.id }}">
+          {{ tag.name }}
+        </label>
+      {% endfor %}
+    {% else %}
+      <p>タグがまだ登録されていません。<a href="/tags">タグ管理画面へ</a></p>
+    {% endif %}
+  </div>
+
+  <button type="submit">追加</button>
+</form>
+
+<hr>
+
+<h3>登録済みTodo</h3>
+<ul>
+{% for t in todos %}
+  <li {% if t.complete %}style="text-decoration: line-through; color: gray;"{% endif %}>
+    
+    <!-- ✅ 完了チェック -->
+    <form action="/toggle/{{ t.id }}" method="post" style="display:inline;">
+      <input type="hidden" name="complete" value="{{ 'false' if t.complete else 'true' }}">
+      <input type="checkbox" onChange="this.form.submit()" {% if t.complete %}checked{% endif %}>
+    </form>
+
+    {{ t.content }}
+    {% if t.deadline %}
+      - 締切: {{ t.deadline.strftime("%Y-%m-%d") }}
+    {% endif %}
+
+    <!-- ✅ タグ表示 -->
+    {% if t.tags %}
+      <small>（タグ: {{ t.tags | map(attribute='name') | join(', ') }}）</small>
+      <br>
+  <small>タグ: 
+    {% for tag in t.tags %}
+      {{ tag.name }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+  </small>
+    {% endif %}
+
+    <!-- ✅ 編集ボタン -->
+    {% if not t.complete %}
+      <form action="/edit/{{ t.id }}" method="get" style="display:inline;">
+        <button type="submit">✏編集</button>
+      </form>
+    {% else %}
+      <button type="button" disabled style="opacity: 0.5;">✏編集</button>
+    {% endif %}
+
+    <!-- 🗑削除ボタン -->
+    <form action="/delete/{{ t.id }}" method="post" style="display:inline;">
+      <button type="submit">🗑削除</button>
+    </form>
+  </li>
+{% else %}
+  <li>登録されたToDoはありません。</li>
+{% endfor %}
+</ul>
+
+{% endblock %}

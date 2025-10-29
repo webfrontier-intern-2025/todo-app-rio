@@ -1,21 +1,26 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+from typing import Optional
 
 
-class TodoSchemaBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    completed: bool | None = None
-    deadline: datetime | None = None
+class TodoBase(BaseModel):
+    content: str
+    complete: bool = False
+    deadline: Optional[datetime] = None
 
-class TodoSchema(TodoSchemaBase):
+
+class TodoCreate(TodoBase):
+    pass
+
+
+class TodoUpdate(TodoBase):
+    pass
+
+
+class TodoResponse(TodoBase):
     id: int
-    content: str
+    created_at: datetime
+    updated_at: datetime
 
-
-class CreateTodoSchema(TodoSchemaBase):
-    content: str
-
-
-class UpdateTodoSchema(TodoSchemaBase):
-    content: str | None = None
-
+    class Config:
+        from_attributes = True  # Pydantic v2対応

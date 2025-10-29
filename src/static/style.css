@@ -1,0 +1,41 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f9ff;
+  margin: 0;
+  padding: 2em;
+}
+
+header {
+  background: #007bff;
+  color: white;
+  padding: 1em;
+  text-align: center;
+}
+
+form {
+  margin-bottom: 1.5em;
+  display: flex;
+  gap: 8px;
+}
+
+input, button {
+  padding: 8px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+li[style*="line-through"] {
+  opacity: 0.6;
+}
+
+.overdue {
+  color: red;
+  font-weight: bold;
+}

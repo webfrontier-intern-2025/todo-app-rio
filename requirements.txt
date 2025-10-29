@@ -9,3 +9,6 @@ uvicorn[standard]
 debugpy
 alembic
 sqlalchemy-seeder
+jinja2
+aiofiles
+python-multipart
